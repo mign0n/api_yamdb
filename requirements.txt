@@ -36,7 +36,7 @@ inflection==0.5.1
     # via drf-spectacular
 jsonschema==4.17.3
     # via drf-spectacular
-pyjwt==2.1.0
+pyjwt==2.4.0
     # via
     #   api-yamdb (pyproject.toml)
     #   djangorestframework-simplejwt
