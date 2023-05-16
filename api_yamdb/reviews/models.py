@@ -8,24 +8,24 @@ User = get_user_model()
 class PubDateModel(models.Model):
     pub_date = models.DateTimeField(
         verbose_name='Дата создания',
-        auto_now_add=True)
+        auto_now_add=True,
+    )
 
     class Meta:
         abstract = True
 
 
 class Category(models.Model):
-
     name = models.CharField(
         verbose_name='Название категории',
-        max_length=100,
+        max_length=256,
     )
     slug = models.SlugField(
         verbose_name='Слаг категории',
         unique=True,
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Категория произведений'
         verbose_name_plural = 'Категории произведений'
 
@@ -34,17 +34,16 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-
     name = models.CharField(
         verbose_name='Название жанра',
-        max_length=100,
+        max_length=256,
     )
     slug = models.SlugField(
         verbose_name='Слаг жанра',
         unique=True,
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Жанр произведения'
         verbose_name_plural = 'Жанры произведений'
 
@@ -53,16 +52,18 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-
     name = models.CharField(
         verbose_name='Название произведения',
-        max_length=100,
+        max_length=256,
     )
-
     year = models.IntegerField(
         verbose_name='Год создания произведения',
     )
-
+    description = models.TextField(
+        verbose_name='Описание произведения',
+        blank=True,
+        null=True,
+    )
     category = models.ForeignKey(
         verbose_name='Категория произведения',
         to='Category',
@@ -72,7 +73,7 @@ class Title(models.Model):
         related_name='titles',
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -81,7 +82,6 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-
     title = models.ForeignKey(
         verbose_name='Произведение',
         to=Title,
@@ -110,7 +110,6 @@ class GenreTitle(models.Model):
 
 
 class Review(PubDateModel):
-
     text = models.TextField(
         verbose_name='Текст отзыва',
     )
@@ -131,7 +130,7 @@ class Review(PubDateModel):
         related_name='reviews',
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Отзыв на произведение'
         verbose_name_plural = 'Отзывы на произведения'
         constraints = [
@@ -146,7 +145,6 @@ class Review(PubDateModel):
 
 
 class Comment(PubDateModel):
-
     text = models.TextField(
         verbose_name='Текст комментария',
     )
@@ -163,7 +161,7 @@ class Comment(PubDateModel):
         related_name='comments',
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Комментарий к отзыву на произведение'
         verbose_name_plural = 'Комментарии к отзывам на произведения'
 

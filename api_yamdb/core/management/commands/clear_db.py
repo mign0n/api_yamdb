@@ -1,13 +1,17 @@
-from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
-
-User = get_user_model()
+from reviews.models import (
+    Category,
+    Comment,
+    Genre,
+    GenreTitle,
+    Review,
+    Title,
+    User,
+)
 
 
 class Command(BaseCommand):
-
     help = 'Clear database'
 
     def handle(self, *args, **options) -> None:
