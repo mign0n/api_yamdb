@@ -1,4 +1,7 @@
+from django.db.models import QuerySet
+from django.utils.functional import cached_property
 from rest_framework import filters, viewsets
+from rest_framework.generics import get_object_or_404
 
 from api.serializers import (
     CategorySerializer,
@@ -8,7 +11,7 @@ from api.serializers import (
     ReviewSerializer,
     TitleSerializer,
 )
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
+from reviews.models import Category, Comment, Genre, GenreTitle, Title
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -35,7 +38,13 @@ class GenreTitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    queryset = Review.objects.all()
+
+    @cached_property
+    def _title(self) -> QuerySet:
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    def get_queryset(self) -> QuerySet:
+        return self._title.reviews.all()
 
 
 class TitleViewSet(viewsets.ModelViewSet):
