@@ -12,7 +12,7 @@ from api.views import (
     TitleViewSet,
 )
 
-from .views import SignUpView, TokenView
+from api.views import SignUpView, TokenView
 
 app_name = 'api'
 

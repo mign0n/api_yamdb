@@ -55,7 +55,7 @@ class CustomUser(AbstractUser):
             verbose_name='Код подтверждения')    
 
 
-    class Meta():
+    class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 

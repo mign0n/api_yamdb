@@ -20,7 +20,7 @@ from api.serializers import (
 from reviews.models import Category, Comment, Genre, GenreTitle, Title
 from users.models import CustomUser
 
-from .serializers import SignUpSerializer, TokenSerializer
+from api.serializers import SignUpSerializer, TokenSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -117,8 +117,6 @@ class TokenView(APIView):
         username = serializer.data['username']
         user = get_object_or_404(CustomUser, username=username)
         confirmation_code = serializer.data['confirmation_code']
-        print(confirmation_code)
-        print(user.confirmation_code)
         if user.confirmation_code != confirmation_code:
             return Response({'Код подтверждения не верен'},
                             status=status.HTTP_400_BAD_REQUEST)
