@@ -16,7 +16,6 @@ v1_router = SimpleRouter()
 v1_router.register('categories', CategoryViewSet, basename='category')
 v1_router.register('genres', GenreViewSet, basename='genre')
 v1_router.register('genretitle', GenreTitleViewSet, basename='genre-title')
-v1_router.register('reviews', ReviewViewSet, basename='review')
 v1_router.register('titles', TitleViewSet, basename='title')
 
 v1_reviews_router = SimpleRouter()
