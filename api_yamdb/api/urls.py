@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
@@ -9,6 +11,8 @@ from api.views import (
     ReviewViewSet,
     TitleViewSet,
 )
+
+from api.views import SignUpView, TokenView
 
 app_name = 'api'
 
@@ -31,4 +35,6 @@ urlpatterns = [
         'v1/titles/<int:title_id>/reviews/<int:review_id>/',
         include(v1_comments_router.urls),
     ),
+    path('v1/auth/signup/', SignUpView.as_view(), name='register_user'),
+    path('v1/auth/token/', TokenView.as_view(), name='token_create'),
 ]
