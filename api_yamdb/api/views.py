@@ -5,6 +5,8 @@ from django.db.models import QuerySet
 from django.utils.functional import cached_property
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
@@ -47,6 +49,7 @@ class GenreTitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @cached_property
     def _title(self) -> QuerySet:
@@ -54,6 +57,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         return self._title.reviews.all()
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        request.data['author'] = self.request.user.pk
+        request.data['title'] = self.kwargs.get('title_id')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=self.get_success_headers(serializer.data),)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
