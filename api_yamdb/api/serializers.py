@@ -1,4 +1,5 @@
 import re
+from typing import Union
 
 from django.conf import settings
 from django.db.models import Avg
@@ -49,11 +50,9 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'genre',
         )
 
-    def get_rating(self, title: Title) -> int:
+    def get_rating(self, title: Title) -> Union[int, None]:
         rating = title.reviews.aggregate(Avg('score')).get('score__avg')
-        if isinstance(rating, float):
-            return int(rating)
-        return rating
+        return None if rating is None else round(rating)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
