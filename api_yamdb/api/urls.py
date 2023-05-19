@@ -1,25 +1,23 @@
-from django.conf import settings
-from django.conf.urls.static import static
+# from django.conf import settings
+# from django.conf.urls.static import static
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from api.views import (
     CategoryViewSet,
     CommentViewSet,
-    GenreTitleViewSet,
     GenreViewSet,
     ReviewViewSet,
+    SignUpView,
     TitleViewSet,
+    TokenView,
 )
-
-from api.views import SignUpView, TokenView
 
 app_name = 'api'
 
 v1_router = SimpleRouter()
 v1_router.register('categories', CategoryViewSet, basename='category')
 v1_router.register('genres', GenreViewSet, basename='genre')
-v1_router.register('genretitle', GenreTitleViewSet, basename='genre-title')
 v1_router.register('titles', TitleViewSet, basename='title')
 
 v1_reviews_router = SimpleRouter()
