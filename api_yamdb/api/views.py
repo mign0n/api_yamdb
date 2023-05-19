@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api.permissions import IsAuthorOrModer
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -21,7 +22,7 @@ from api.serializers import (
     TitleSerializer,
     TokenSerializer,
 )
-from reviews.models import Category, Comment, Genre, GenreTitle, Title
+from reviews.models import Category, Genre, GenreTitle, Review, Title
 from users.models import CustomUser
 
 
@@ -34,7 +35,35 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrModer)
+
+    @cached_property
+    def _review(self) -> QuerySet:
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id'),
+        )
+
+    def get_queryset(self) -> QuerySet:
+        return self._review.comments.all()
+
+    def create(
+        self,
+        request: Request,
+        *args: tuple,
+        **kwargs: dict,
+    ) -> Response:
+        request.data['author'] = self.request.user.pk
+        request.data['review'] = self.kwargs.get('review_id')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=self.get_success_headers(serializer.data),
+        )
 
 
 class GenreViewSet(viewsets.ModelViewSet):
