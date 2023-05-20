@@ -10,11 +10,12 @@ readme = "README.md"
 requires-python = ">=3.7, <=3.9.10"
 dependencies = [
     "Django ==3.2.19",
+    "django-filter",
     "djangorestframework",
     "djangorestframework-simplejwt",
     "drf-spectacular",
     "drf-spectacular[sidecar]",
-    "PyJWT",
+    "PyJWT ==2.4.0",
     "requests"
 ]
 
