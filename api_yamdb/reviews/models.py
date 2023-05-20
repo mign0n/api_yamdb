@@ -62,7 +62,6 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Описание произведения',
         blank=True,
-        null=True,
     )
     category = models.ForeignKey(
         verbose_name='Категория произведения',
@@ -72,6 +71,7 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         related_name='titles',
     )
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
 
     class Meta:
         verbose_name = 'Произведение'
