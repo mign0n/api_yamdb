@@ -16,6 +16,7 @@ from rest_framework import (
     status,
     viewsets,
 )
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
@@ -23,7 +24,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.permissions import AdminOrReadOnly
+from api.permissions import AdminOrReadOnly, IsAdmin, MePermission
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -33,6 +34,9 @@ from api.serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
     TokenSerializer,
+    UsersSerializer,
+    UsernameSerializer,
+    UserMeSerializer,
 )
 from reviews.models import Category, Comment, Genre, Title
 from users.models import CustomUser
@@ -197,3 +201,43 @@ class TokenView(APIView):
         else:
             token = AccessToken.for_user(user)
             return Response({'token': str(token)}, status=status.HTTP_200_OK)
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (IsAdmin,)
+    queryset = CustomUser.objects.all()
+    serializer_class = UsersSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+
+
+class UsernameViewSet(mixins.RetrieveModelMixin,
+                      mixins.UpdateModelMixin,
+                      mixins.DestroyModelMixin,
+                      GenericViewSet):
+
+    permission_classes = (IsAdmin,)
+    lookup_field = 'username'
+    queryset = CustomUser.objects.all()
+    serializer_class = UsernameSerializer
+
+
+class UserMeViewSet(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    GenericViewSet):
+
+    permission_classes = (MePermission, )
+    queryset = CustomUser.objects.all()
+    serializer_class = UsernameSerializer
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        user = queryset.get(username=self.request.user)
+        self.check_object_permissions(self.request, user)
+        return user
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return UsernameSerializer
+        return UserMeSerializer
