@@ -3,7 +3,19 @@ import random
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.utils.functional import cached_property
-from rest_framework import filters, permissions, status, viewsets
+from django_filters.rest_framework import (
+    CharFilter,
+    DjangoFilterBackend,
+    FilterSet,
+)
+from rest_framework import (
+    filters,
+    mixins,
+    permissions,
+    serializers,
+    status,
+    viewsets,
+)
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
@@ -11,26 +23,37 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.permissions import IsAuthorOrModer
+from api.permissions import AdminOrReadOnly, IsAuthorOrModer
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
-    GenreTitleSerializer,
     ReviewSerializer,
     SignUpSerializer,
-    TitleSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
     TokenSerializer,
 )
-from reviews.models import Category, Genre, GenreTitle, Review, Title
+from reviews.models import Category, Genre, Review, Title
 from users.models import CustomUser
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class ListCreateDestroyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    pass
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
+    lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    permission_classes = (AdminOrReadOnly,)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -66,14 +89,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         )
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-
-
-class GenreTitleViewSet(viewsets.ModelViewSet):
-    serializer_class = GenreTitleSerializer
-    queryset = GenreTitle.objects.all()
+    lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    permission_classes = (AdminOrReadOnly,)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -105,9 +127,34 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )
 
 
+class TitleFilter(FilterSet):
+    category = CharFilter(field_name='category__slug')
+    genre = CharFilter(field_name='genre__slug')
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'category', 'genre')
+
+
 class TitleViewSet(viewsets.ModelViewSet):
-    serializer_class = TitleSerializer
+    http_method_names = [
+        'get',
+        'post',
+        'patch',
+        'delete',
+        'head',
+        'options',
+        'trace',
+    ]
     queryset = Title.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+    permission_classes = (AdminOrReadOnly,)
+
+    def get_serializer_class(self) -> serializers.ModelSerializer:
+        if self.action in ['list', 'retrieve']:
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class SignUpView(APIView):
