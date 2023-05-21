@@ -8,7 +8,6 @@ class IsAdmin(permissions.BasePermission):
 
     def has_permission(self, request: Request, view: QuerySet) -> bool:
         user = request.user
-        print(type(request))
         return (
             user.is_authenticated and user.is_admin
             or user.is_superuser
@@ -20,8 +19,6 @@ class IsAdmin(permissions.BasePermission):
             view: QuerySet,
             obj: QuerySet) -> bool:
         user = request.user
-        print(type(request))
-        print(type(obj))
         return (
             user.is_authenticated and user.is_admin
             or user.is_superuser

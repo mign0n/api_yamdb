@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.db.models import QuerySet
 from django.utils.functional import cached_property
 from django_filters.rest_framework import (
@@ -176,9 +178,8 @@ class TokenView(APIView):
                 {'Код подтверждения не верен'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            token = AccessToken.for_user(user)
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -190,10 +191,12 @@ class UsersViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
 
 
-class UsernameViewSet(mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin,
-                      mixins.DestroyModelMixin,
-                      GenericViewSet):
+class UsernameViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
 
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
@@ -201,9 +204,11 @@ class UsernameViewSet(mixins.RetrieveModelMixin,
     serializer_class = UsernameSerializer
 
 
-class UserMeViewSet(mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,
-                    GenericViewSet):
+class UserMeViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet,
+):
 
     permission_classes = (MePermission, )
     queryset = CustomUser.objects.all()
@@ -215,7 +220,7 @@ class UserMeViewSet(mixins.RetrieveModelMixin,
         self.check_object_permissions(self.request, user)
         return user
 
-    def get_serializer_class(self) -> serializers.ModelSerializer:
+    def get_serializer_class(self) -> Type[serializers.ModelSerializer]:
         if self.action == 'retrieve':
             return UsernameSerializer
         return UserMeSerializer

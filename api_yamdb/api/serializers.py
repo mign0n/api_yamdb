@@ -76,16 +76,20 @@ class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username,
-                    validate_user],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+            validate_user,
+        ],
     )
     email = serializers.EmailField(
         max_length=254,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username,
-                    validate_user],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+            validate_user,
+        ],
     )
 
     class Meta:
@@ -111,50 +115,80 @@ class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
     )
     email = serializers.EmailField(
         max_length=254,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
     )
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
 
 
 class UsernameSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=150,
-                                     required=False)
-    email = serializers.EmailField(max_length=254,
-                                   required=False)
+    username = serializers.CharField(
+        max_length=150,
+        required=False,
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=False,
+    )
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
 
 
 class UserMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         required=False,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
     )
     email = serializers.EmailField(
         max_length=254,
         required=False,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),
-                    validate_username],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
     )
     role = serializers.CharField(read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
