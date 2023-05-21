@@ -1,8 +1,8 @@
 import csv
-from datetime import datetime
+from typing import Dict
 
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.management.base import BaseCommand
-from django.db.models import Model
 
 from reviews.models import (
     Category,
@@ -18,7 +18,7 @@ from reviews.models import (
 class Command(BaseCommand):
     help = 'Loads data from csv files'
 
-    def handle(self, *args, **options) -> None:
+    def handle(self, *args: tuple, **options: dict) -> None:
         UsersLoader().read()
         CategoryLoader().read()
         GenreLoader().read()
@@ -29,9 +29,6 @@ class Command(BaseCommand):
 
 
 class CsvLoader:
-    def parse(self, data: dict[str, str]) -> Model:
-        pass
-
     def get_file_name(self) -> str:
         assert isinstance(self.file_name, str), (
             "'%s' should either include a `file_name` attribute, "
@@ -53,9 +50,9 @@ class CsvLoader:
 class UsersLoader(CsvLoader):
     file_name = 'static/data/users.csv'
 
-    def parse(self, data: dict[str, str]) -> User:
+    def parse(self, data: Dict[str, str]) -> AbstractBaseUser:
         instance = User(
-            id=int(data.get('id')),
+            id=data.get('id'),
             username=data.get('username'),
             email=data.get('email'),
             role=data.get('role'),
@@ -69,9 +66,9 @@ class UsersLoader(CsvLoader):
 class CategoryLoader(CsvLoader):
     file_name = 'static/data/category.csv'
 
-    def parse(self, data: dict[str, str]) -> Category:
+    def parse(self, data: Dict[str, str]) -> Category:
         instance = Category(
-            id=int(data.get('id')),
+            id=data.get('id'),
             name=data.get('name'),
             slug=data.get('slug'),
         )
@@ -81,9 +78,9 @@ class CategoryLoader(CsvLoader):
 class GenreLoader(CsvLoader):
     file_name = 'static/data/genre.csv'
 
-    def parse(self, data: dict[str, str]) -> Genre:
+    def parse(self, data: Dict[str, str]) -> Genre:
         instance = Genre(
-            id=int(data.get('id')),
+            id=data.get('id'),
             name=data.get('name'),
             slug=data.get('slug'),
         )
@@ -93,12 +90,12 @@ class GenreLoader(CsvLoader):
 class TitleLoader(CsvLoader):
     file_name = 'static/data/titles.csv'
 
-    def parse(self, data: dict[str, str]) -> Title:
+    def parse(self, data: Dict[str, str]) -> Title:
         instance = Title(
-            id=int(data.get('id')),
+            id=data.get('id'),
             name=data.get('name'),
-            year=int(data.get('year')),
-            category_id=int(data.get('category')),
+            year=data.get('year'),
+            category_id=data.get('category'),
         )
         return instance
 
@@ -106,11 +103,11 @@ class TitleLoader(CsvLoader):
 class GenreTitleLoader(CsvLoader):
     file_name = 'static/data/genre_title.csv'
 
-    def parse(self, data: dict[str, str]) -> GenreTitle:
+    def parse(self, data: Dict[str, str]) -> GenreTitle:
         instance = GenreTitle(
-            id=int(data.get('id')),
-            title_id=int(data.get('title_id')),
-            genre_id=int(data.get('genre_id')),
+            id=data.get('id'),
+            title_id=data.get('title_id'),
+            genre_id=data.get('genre_id'),
         )
         return instance
 
@@ -118,17 +115,14 @@ class GenreTitleLoader(CsvLoader):
 class ReviewLoader(CsvLoader):
     file_name = 'static/data/review.csv'
 
-    def parse(self, data: dict[str, str]) -> Review:
+    def parse(self, data: Dict[str, str]) -> Review:
         instance = Review(
-            id=int(data.get('id')),
-            title_id=int(data.get('title_id')),
+            id=data.get('id'),
+            title_id=data.get('title_id'),
             text=data.get('text'),
-            author_id=int(data.get('author')),
-            score=int(data.get('score')),
-            pub_date=datetime.strptime(
-                data.get('pub_date'),
-                '%Y-%m-%dT%H:%M:%S.%fZ',
-            ),
+            author_id=data.get('author'),
+            score=data.get('score'),
+            pub_date=data.get('pub_date'),
         )
         return instance
 
@@ -136,15 +130,12 @@ class ReviewLoader(CsvLoader):
 class CommentLoader(CsvLoader):
     file_name = 'static/data/comments.csv'
 
-    def parse(self, data: dict[str, str]) -> Comment:
+    def parse(self, data: Dict[str, str]) -> Comment:
         instance = Comment(
-            id=int(data.get('id')),
-            review_id=int(data.get('review_id')),
+            id=data.get('id'),
+            review_id=data.get('review_id'),
             text=data.get('text'),
-            author_id=int(data.get('author')),
-            pub_date=datetime.strptime(
-                data.get('pub_date'),
-                '%Y-%m-%dT%H:%M:%S.%fZ',
-            ),
+            author_id=data.get('author'),
+            pub_date=data.get('pub_date'),
         )
         return instance

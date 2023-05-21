@@ -5,7 +5,7 @@ from rest_framework import serializers
 USERNAME_PATTERN_REGEX = r'^[\w.@+-]+\Z'
 
 
-def validate_username(value: list) -> str:
+def validate_username(value: str) -> str:
     """Валидация поля username согласно шаблону."""
 
     match = re.fullmatch(USERNAME_PATTERN_REGEX, value)

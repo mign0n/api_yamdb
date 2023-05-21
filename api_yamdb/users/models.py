@@ -11,7 +11,6 @@ def validate_user(value: str) -> None:
 
 
 class CustomUser(AbstractUser):
-
     USER = 'user'
     ADMIN = 'admin'
     MODERATOR = 'moderator'
@@ -39,8 +38,10 @@ class CustomUser(AbstractUser):
     )
 
     first_name = models.CharField(
-        max_length=150, verbose_name='Имя',
-        help_text='Укажите Имя', blank=True,
+        max_length=150,
+        verbose_name='Имя',
+        help_text='Укажите Имя',
+        blank=True,
     )
 
     last_name = models.CharField(
@@ -66,7 +67,9 @@ class CustomUser(AbstractUser):
     )
 
     confirmation_code = models.CharField(
-        max_length=10, blank=True, verbose_name='Код подтверждения',
+        max_length=10,
+        blank=True,
+        verbose_name='Код подтверждения',
     )
 
     @property
@@ -75,11 +78,11 @@ class CustomUser(AbstractUser):
 
     @property
     def is_moderator(self) -> bool:
-        return self.is_admin() or self.role == 'moderator'
+        return self.is_admin or self.role == 'moderator'
 
     @property
     def is_user(self) -> bool:
-        return self.is_moderator() or self.role == 'user'
+        return self.is_moderator or self.role == 'user'
 
     class Meta:
         verbose_name = 'Пользователь'

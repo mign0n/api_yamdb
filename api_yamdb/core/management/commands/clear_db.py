@@ -14,7 +14,7 @@ from reviews.models import (
 class Command(BaseCommand):
     help = 'Clear database'
 
-    def handle(self, *args, **options) -> None:
+    def handle(self, *args: tuple, **options: dict) -> None:
         Comment.objects.all().delete()
         Review.objects.all().delete()
         GenreTitle.objects.all().delete()

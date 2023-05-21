@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import SimpleRouter
 
 from api.views import (
@@ -34,14 +35,31 @@ urlpatterns = [
     ),
     path('auth/signup/', SignUpView.as_view(), name='register_user'),
     path('auth/token/', TokenView.as_view(), name='token_create'),
-    path('users/me/',
-         UserMeViewSet.as_view({'get': 'retrieve', 'patch': 'update'}),
-         name='user_me'),
-    path('users/<str:username>/',
-         UsernameViewSet.as_view(
-             {'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
-         name='username'),
-    path('users/',
-         UsersViewSet.as_view({'get': 'list', 'post': 'create'}),
-         name='users'),
+    path(
+        'users/me/',
+        UserMeViewSet.as_view({'get': 'retrieve', 'patch': 'update'}),
+        name='user_me',
+    ),
+    path(
+        'users/<str:username>/',
+        UsernameViewSet.as_view(
+            {
+                'get': 'retrieve',
+                'patch': 'update',
+                'delete': 'destroy',
+            },
+        ),
+        name='username',
+    ),
+    path(
+        'users/',
+        UsersViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='users',
+    ),
+    path('doc/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(
+        'doc/',
+        SpectacularSwaggerView.as_view(url_name='api:schema'),
+        name='doc',
+    ),
 ]

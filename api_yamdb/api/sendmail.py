@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 
 
 def send_mail_code(email: str) -> int:
-    """ Отправка письма на email"""
+    """Отправка письма на email"""
 
     confirmation_code = random.randint(00000, 99999)
     send_mail(

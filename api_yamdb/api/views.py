@@ -38,7 +38,7 @@ from api.serializers import (
     UsernameSerializer,
     UsersSerializer,
 )
-from reviews.models import Category, Genre, Title, Comment
+from reviews.models import Category, Comment, Genre, Title
 from users.models import CustomUser
 
 
@@ -183,7 +183,6 @@ class TokenView(APIView):
 
 
 class UsersViewSet(viewsets.ModelViewSet):
-
     permission_classes = (IsAdmin,)
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
@@ -197,7 +196,6 @@ class UsernameViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
     queryset = CustomUser.objects.all()
@@ -209,8 +207,7 @@ class UserMeViewSet(
     mixins.UpdateModelMixin,
     GenericViewSet,
 ):
-
-    permission_classes = (MePermission, )
+    permission_classes = (MePermission,)
     queryset = CustomUser.objects.all()
     serializer_class = UsernameSerializer
 
