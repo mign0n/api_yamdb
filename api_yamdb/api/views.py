@@ -1,6 +1,3 @@
-import random
-
-from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.utils.functional import cached_property
 from django_filters.rest_framework import (
@@ -16,15 +13,16 @@ from rest_framework import (
     status,
     viewsets,
 )
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from api.permissions import AdminOrReadOnly, IsAdmin, MePermission
+from api.sendmail import send_mail_code
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -34,9 +32,9 @@ from api.serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
     TokenSerializer,
-    UsersSerializer,
-    UsernameSerializer,
     UserMeSerializer,
+    UsernameSerializer,
+    UsersSerializer,
 )
 from reviews.models import Category, Comment, Genre, Title
 from users.models import CustomUser
@@ -139,42 +137,22 @@ class SignUpView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request: Request) -> Response:
-        try:
-            user = CustomUser.objects.get(
-                username=request.data.get('username'),
-            )
-            code = getattr(user, 'confirmation_code')
+        user = CustomUser.objects.filter(
+            username=request.data.get('username'),
+        ).first()
+        if user:
             email = getattr(user, 'email')
-            if not code and user or code and user:
-                if request.data.get('email') != email:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                confirmation_code = random.randint(00000, 99999)
-                send_mail(
-                    'Код подтверждения регистрации',
-                    'Вы зарегистрированы на YAMDB!'
-                    f' Ваш код подтвержения: {confirmation_code}',
-                    'admin@yamdb.com',
-                    [email],
-                    fail_silently=False,
-                )
-                user.confirmation_code = confirmation_code
-                user.save()
-                return Response(status=status.HTTP_200_OK)
-        except:
-            pass
+            if request.data.get('email') != email:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            confirmation_code = send_mail_code(email)
+            user.confirmation_code = confirmation_code
+            user.save()
+            return Response(status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get('email')
-        confirmation_code = random.randint(00000, 99999)
+        confirmation_code = send_mail_code(email)
         serializer.save(confirmation_code=confirmation_code)
-        send_mail(
-            'Код подтверждения регистрации',
-            'Вы зарегистрированы на YAMDB!'
-            f' Ваш код подтвержения: {confirmation_code}',
-            'admin@yamdb.com',
-            [email],
-            fail_silently=False,
-        )
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
@@ -231,13 +209,13 @@ class UserMeViewSet(mixins.RetrieveModelMixin,
     queryset = CustomUser.objects.all()
     serializer_class = UsernameSerializer
 
-    def get_object(self):
+    def get_object(self) -> QuerySet:
         queryset = self.filter_queryset(self.get_queryset())
         user = queryset.get(username=self.request.user)
         self.check_object_permissions(self.request, user)
         return user
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> serializers.ModelSerializer:
         if self.action == 'retrieve':
             return UsernameSerializer
         return UserMeSerializer
