@@ -1,6 +1,5 @@
-import random
+from typing import Type
 
-from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.utils.functional import cached_property
 from django_filters.rest_framework import (
@@ -21,9 +20,11 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.permissions import AdminOrReadOnly, IsAuthorOrModer
+from api.permissions import AdminOrReadOnly, IsAdmin, MePermission
+from api.sendmail import send_mail_code
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -33,8 +34,11 @@ from api.serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
     TokenSerializer,
+    UserMeSerializer,
+    UsernameSerializer,
+    UsersSerializer,
 )
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import Category, Genre, Title, Comment
 from users.models import CustomUser
 
 
@@ -58,35 +62,7 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrModer)
-
-    @cached_property
-    def _review(self) -> QuerySet:
-        return get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id'),
-            title=self.kwargs.get('title_id'),
-        )
-
-    def get_queryset(self) -> QuerySet:
-        return self._review.comments.all()
-
-    def create(
-        self,
-        request: Request,
-        *args: tuple,
-        **kwargs: dict,
-    ) -> Response:
-        request.data['author'] = self.request.user.pk
-        request.data['review'] = self.kwargs.get('review_id')
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=self.get_success_headers(serializer.data),
-        )
+    queryset = Comment.objects.all()
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
@@ -163,42 +139,22 @@ class SignUpView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request: Request) -> Response:
-        try:
-            user = CustomUser.objects.get(
-                username=request.data.get('username'),
-            )
-            code = getattr(user, 'confirmation_code')
+        user = CustomUser.objects.filter(
+            username=request.data.get('username'),
+        ).first()
+        if user:
             email = getattr(user, 'email')
-            if not code and user or code and user:
-                if request.data.get('email') != email:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                confirmation_code = random.randint(00000, 99999)
-                send_mail(
-                    'Код подтверждения регистрации',
-                    'Вы зарегистрированы на YAMDB!'
-                    f' Ваш код подтвержения: {confirmation_code}',
-                    'admin@yamdb.com',
-                    [email],
-                    fail_silently=False,
-                )
-                user.confirmation_code = confirmation_code
-                user.save()
-                return Response(status=status.HTTP_200_OK)
-        except:
-            pass
+            if request.data.get('email') != email:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            confirmation_code = send_mail_code(email)
+            user.confirmation_code = confirmation_code
+            user.save()
+            return Response(status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get('email')
-        confirmation_code = random.randint(00000, 99999)
+        confirmation_code = send_mail_code(email)
         serializer.save(confirmation_code=confirmation_code)
-        send_mail(
-            'Код подтверждения регистрации',
-            'Вы зарегистрированы на YAMDB!'
-            f' Ваш код подтвержения: {confirmation_code}',
-            'admin@yamdb.com',
-            [email],
-            fail_silently=False,
-        )
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
@@ -222,6 +178,49 @@ class TokenView(APIView):
                 {'Код подтверждения не верен'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            token = AccessToken.for_user(user)
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (IsAdmin,)
+    queryset = CustomUser.objects.all()
+    serializer_class = UsersSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+
+
+class UsernameViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+
+    permission_classes = (IsAdmin,)
+    lookup_field = 'username'
+    queryset = CustomUser.objects.all()
+    serializer_class = UsernameSerializer
+
+
+class UserMeViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet,
+):
+
+    permission_classes = (MePermission, )
+    queryset = CustomUser.objects.all()
+    serializer_class = UsernameSerializer
+
+    def get_object(self) -> QuerySet:
+        queryset = self.filter_queryset(self.get_queryset())
+        user = queryset.get(username=self.request.user)
+        self.check_object_permissions(self.request, user)
+        return user
+
+    def get_serializer_class(self) -> Type[serializers.ModelSerializer]:
+        if self.action == 'retrieve':
+            return UsernameSerializer
+        return UserMeSerializer

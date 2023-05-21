@@ -1,13 +1,13 @@
-import re
 from typing import Union
 
-from django.conf import settings
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from rest_framework.relations import SlugRelatedField
 
+from api.validators import validate_username
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import CustomUser
+from users.models import CustomUser, validate_user
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -76,18 +76,31 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+            validate_user,
+        ],
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=True,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+            validate_user,
+        ],
+    )
+
     class Meta:
         model = CustomUser
         fields = (
             'username',
             'email',
         )
-
-    def validate_username(self, value: str) -> str:
-        match = re.fullmatch(settings.USERNAME_PATTERN_REGEX, value)
-        if not match:
-            raise serializers.ValidationError('Имя пользователя некорректно.')
-        return value
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -98,4 +111,87 @@ class TokenSerializer(serializers.ModelSerializer):
         fields = (
             'username',
             'confirmation_code',
+        )
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=True,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+
+class UsernameSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=False,
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=False,
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=False,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=False,
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            validate_username,
+        ],
+    )
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
         )
