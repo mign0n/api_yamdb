@@ -27,6 +27,9 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'reviews.apps.ReviewsConfig',
     'users.apps.UsersConfig',
+
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 # fmt: on
 
@@ -92,6 +95,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'YaMDb API',
+    'DESCRIPTION': 'Проект YaMDb собирает отзывы пользователей на различные произведения.',
+    'VERSION': '0.0.1',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
 }
 
 SIMPLE_JWT = {

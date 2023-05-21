@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import SimpleRouter
 
 from api.views import (
@@ -42,7 +43,11 @@ urlpatterns = [
     path(
         'users/<str:username>/',
         UsernameViewSet.as_view(
-            {'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'},
+            {
+                'get': 'retrieve',
+                'patch': 'update',
+                'delete': 'destroy',
+            },
         ),
         name='username',
     ),
@@ -50,5 +55,11 @@ urlpatterns = [
         'users/',
         UsersViewSet.as_view({'get': 'list', 'post': 'create'}),
         name='users',
+    ),
+    path('doc/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(
+        'doc/',
+        SpectacularSwaggerView.as_view(url_name='api:schema'),
+        name='doc',
     ),
 ]
