@@ -38,7 +38,7 @@ from api.serializers import (
     UsernameSerializer,
     UsersSerializer,
 )
-from reviews.models import Category, Comment, Genre, Title
+from reviews.models import Category, Genre, Title, Comment
 from users.models import CustomUser
 
 

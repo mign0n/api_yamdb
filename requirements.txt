@@ -15,10 +15,13 @@ charset-normalizer==2.0.12
 django==3.2.19
     # via
     #   api-yamdb (pyproject.toml)
+    #   django-filter
     #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-spectacular
     #   drf-spectacular-sidecar
+django-filter==23.2
+    # via api-yamdb (pyproject.toml)
 djangorestframework==3.12.4
     # via
     #   api-yamdb (pyproject.toml)
@@ -36,7 +39,7 @@ inflection==0.5.1
     # via drf-spectacular
 jsonschema==4.17.3
     # via drf-spectacular
-pyjwt==2.1.0
+pyjwt==2.4.0
     # via
     #   api-yamdb (pyproject.toml)
     #   djangorestframework-simplejwt
