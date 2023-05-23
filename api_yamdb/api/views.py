@@ -42,7 +42,7 @@ from api.serializers import (
     UsernameSerializer,
     UsersSerializer,
 )
-from reviews.models import Category, Comment, Genre, Title, Review
+from reviews.models import Category, Genre, Review, Title
 from users.models import CustomUser
 
 
@@ -80,8 +80,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self._review.comments.all()
 
     def perform_create(
-            self,
-            serializer: serializers.ModelSerializer,
+        self,
+        serializer: serializers.ModelSerializer,
     ) -> None:
         serializer.save(author=self.request.user, review=self._review)
 
