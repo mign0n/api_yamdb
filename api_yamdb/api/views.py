@@ -42,7 +42,7 @@ from api.serializers import (
     UsernameSerializer,
     UsersSerializer,
 )
-from reviews.models import Category, Comment, Genre, Title
+from reviews.models import Category, Comment, Genre, Title, Review
 from users.models import CustomUser
 
 
@@ -66,7 +66,24 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
+    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
+
+    @cached_property
+    def _review(self) -> QuerySet:
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id'),
+        )
+
+    def get_queryset(self) -> QuerySet:
+        return self._review.comments.all()
+
+    def perform_create(
+            self,
+            serializer: serializers.ModelSerializer,
+    ) -> None:
+        serializer.save(author=self.request.user, review=self._review)
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
