@@ -1,4 +1,4 @@
-from typing import Union
+from typing import OrderedDict, Union
 
 from django.db.models import Avg
 from rest_framework import serializers
@@ -31,9 +31,24 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    def validate(self, value: OrderedDict) -> OrderedDict:
+        if (
+            self.context.get('request').method == 'POST'
+            and Review.objects.filter(
+                author__exact=self.context.get('request').user,
+                title__exact=self.context.get('view').kwargs.get('title_id'),
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                'Ваш отзыв на это произведение уже существует.',
+            )
+        return value
+
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

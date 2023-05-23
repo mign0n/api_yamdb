@@ -16,14 +16,18 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.permissions import AdminOrReadOnly, IsAdmin, MePermission
+from api.permissions import (
+    AdminOrReadOnly,
+    IsAdmin,
+    IsAdminOrModeratorOrAuthorOrReadOnly,
+    MePermission,
+)
 from api.sendmail import send_mail_code
 from api.serializers import (
     CategorySerializer,
@@ -76,7 +80,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
 
     @cached_property
     def _title(self) -> QuerySet:
@@ -85,22 +89,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self) -> QuerySet:
         return self._title.reviews.all()
 
-    def create(
+    def perform_create(
         self,
-        request: Request,
-        *args: tuple,
-        **kwargs: dict,
-    ) -> Response:
-        request.data['author'] = self.request.user.pk
-        request.data['title'] = self.kwargs.get('title_id')
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=self.get_success_headers(serializer.data),
-        )
+        serializer: serializers.ModelSerializer,
+    ) -> None:
+        serializer.save(author=self.request.user, title=self._title)
 
 
 class TitleFilter(FilterSet):

@@ -1,6 +1,7 @@
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 from rest_framework import permissions
 from rest_framework.request import Request
+from rest_framework.viewsets import ModelViewSet
 
 
 class IsAdmin(permissions.BasePermission):
@@ -47,12 +48,38 @@ class IsModerator(permissions.BasePermission):
     ) -> bool:
         user = request.user
         return (
-            user.is_authenticated
+            request.method in permissions.SAFE_METHODS
+            or user.is_authenticated
             and user.is_moderator
             and (
                 obj.__class__.__name__ == 'Review'
                 or obj.__class__.__name__ == 'Comment'
             )
+        )
+
+
+class IsAdminOrModeratorOrAuthorOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request: Request, view: QuerySet) -> bool:
+        user = request.user
+        if not user.is_authenticated:
+            return request.method in permissions.SAFE_METHODS
+        return True
+
+    def has_object_permission(
+        self,
+        request: Request,
+        view: ModelViewSet,
+        obj: Model,
+    ) -> bool:
+        del view
+        user = request.user
+        if not user.is_authenticated:
+            return request.method in permissions.SAFE_METHODS
+        return (
+            request.method in permissions.SAFE_METHODS
+            or request.method == 'POST'
+            or request.method in ('PATCH', 'DELETE')
+            and (user == obj.author or user.is_moderator or user.is_admin)
         )
 
 
