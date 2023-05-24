@@ -9,9 +9,6 @@ from api.validators import validate_username
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser, validate_user
 
-MAX_LENGTH_USERNAME = 150
-MAX_LENGTH_EMAIL = 254
-
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,7 +92,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME,
+        max_length=CustomUser.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -104,7 +101,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_EMAIL,
+        max_length=CustomUser.MAX_LENGTH_EMAIL,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -134,7 +131,7 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME,
+        max_length=CustomUser.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -142,7 +139,7 @@ class UsersSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_EMAIL,
+        max_length=CustomUser.MAX_LENGTH_EMAIL,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -164,11 +161,11 @@ class UsersSerializer(serializers.ModelSerializer):
 
 class UsernameSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME,
+        max_length=CustomUser.MAX_LENGTH_USERNAME,
         required=False,
     )
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_EMAIL,
+        max_length=CustomUser.MAX_LENGTH_EMAIL,
         required=False,
     )
 
@@ -186,7 +183,7 @@ class UsernameSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=MAX_LENGTH_USERNAME,
+        max_length=CustomUser.MAX_LENGTH_USERNAME,
         required=False,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -194,7 +191,7 @@ class UserMeSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_EMAIL,
+        max_length=CustomUser.MAX_LENGTH_EMAIL,
         required=False,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
