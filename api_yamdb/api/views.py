@@ -156,14 +156,14 @@ class SignUpView(APIView):
             email = getattr(user, 'email')
             if request.data.get('email') != email:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            confirmation_code = send_mail_code(email)
+            confirmation_code = send_mail_code(user)
             user.confirmation_code = confirmation_code
             user.save()
             return Response(status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data.get('email')
-        confirmation_code = send_mail_code(email)
+        user = serializer.save()
+        confirmation_code = send_mail_code(user)
         serializer.save(confirmation_code=confirmation_code)
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 

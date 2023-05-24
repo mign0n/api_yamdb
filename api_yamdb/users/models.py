@@ -2,27 +2,32 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+MAX_LENGTH_USERNAME = 150
+MAX_LENGTH_EMAIL = 254
+MAX_LENGHT_CONFORMATION_CODE = 50
+
 
 def validate_user(value: str) -> None:
-    '''Проверка поля username.'''
+    """Проверка поля username."""
 
     if value.lower() == 'me':
         raise ValidationError('Использовать имя <me> запрещено.')
 
 
 class CustomUser(AbstractUser):
-    USER = 'user'
+
     ADMIN = 'admin'
     MODERATOR = 'moderator'
+    USER = 'user'
 
     ROLES = (
-        ('admin', 'Admin'),
-        ('user', 'User'),
-        ('moderator', 'Moderator'),
+        (ADMIN, 'Admin'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
     )
 
     username = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         verbose_name='Логин',
         help_text='Укажите логин',
         unique=True,
@@ -30,7 +35,7 @@ class CustomUser(AbstractUser):
     )
 
     email = models.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         verbose_name='Email address',
         help_text='Укажите email',
         unique=True,
@@ -38,28 +43,27 @@ class CustomUser(AbstractUser):
     )
 
     first_name = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         verbose_name='Имя',
         help_text='Укажите Имя',
         blank=True,
     )
 
     last_name = models.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         verbose_name='Фамилия',
         help_text='Укажите Фамилию',
         blank=True,
     )
 
     bio = models.TextField(
-        max_length=1000,
         verbose_name='Биография',
         help_text='Укажите Биографию',
         blank=True,
     )
 
     role = models.CharField(
-        max_length=100,
+        max_length=MAX_LENGTH_USERNAME,
         verbose_name='Роль',
         choices=ROLES,
         default='user',
@@ -67,22 +71,22 @@ class CustomUser(AbstractUser):
     )
 
     confirmation_code = models.CharField(
-        max_length=10,
+        max_length=MAX_LENGHT_CONFORMATION_CODE,
         blank=True,
         verbose_name='Код подтверждения',
     )
 
     @property
     def is_admin(self) -> bool:
-        return self.is_superuser or self.role == 'admin'
+        return self.is_superuser or self.role == self.ADMIN
 
     @property
     def is_moderator(self) -> bool:
-        return self.is_admin or self.role == 'moderator'
+        return self.is_admin or self.role == self.MODERATOR
 
     @property
     def is_user(self) -> bool:
-        return self.is_moderator or self.role == 'user'
+        return self.is_moderator or self.role == self.USER
 
     class Meta:
         verbose_name = 'Пользователь'
