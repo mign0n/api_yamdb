@@ -3,11 +3,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-USER = 'user'
-
-
 def validate_user(value: str) -> None:
     """Проверка поля username."""
 
@@ -16,6 +11,11 @@ def validate_user(value: str) -> None:
 
 
 class CustomUser(AbstractUser):
+
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+
     ROLES = (
         ('admin', 'Admin'),
         ('user', 'User'),
@@ -75,15 +75,15 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self) -> bool:
-        return self.is_superuser or self.role == ADMIN
+        return self.is_superuser or self.role == self.ADMIN
 
     @property
     def is_moderator(self) -> bool:
-        return self.is_admin or self.role == MODERATOR
+        return self.is_admin or self.role == self.MODERATOR
 
     @property
     def is_user(self) -> bool:
-        return self.is_moderator or self.role == USER
+        return self.is_moderator or self.role == self.USER
 
     class Meta:
         verbose_name = 'Пользователь'
