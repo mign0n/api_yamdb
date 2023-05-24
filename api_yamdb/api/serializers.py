@@ -2,6 +2,7 @@ from typing import OrderedDict, Union
 
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
 
@@ -34,11 +35,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     def validate(self, value: OrderedDict) -> OrderedDict:
+        title = get_object_or_404(
+            Title,
+            pk=self.context.get('view').kwargs.get('title_id'),
+        )
         if (
             self.context.get('request').method == 'POST'
-            and Review.objects.filter(
-                author__exact=self.context.get('request').user,
-                title__exact=self.context.get('view').kwargs.get('title_id'),
+            and title.reviews.filter(
+                author=self.context.get('request').user,
             ).exists()
         ):
             raise serializers.ValidationError(
