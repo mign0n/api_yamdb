@@ -3,18 +3,19 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
+
+
 def validate_user(value: str) -> None:
-    '''Проверка поля username.'''
+    """Проверка поля username."""
 
     if value.lower() == 'me':
         raise ValidationError('Использовать имя <me> запрещено.')
 
 
 class CustomUser(AbstractUser):
-    USER = 'user'
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-
     ROLES = (
         ('admin', 'Admin'),
         ('user', 'User'),
@@ -74,15 +75,15 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self) -> bool:
-        return self.is_superuser or self.role == 'admin'
+        return self.is_superuser or self.role == ADMIN
 
     @property
     def is_moderator(self) -> bool:
-        return self.is_admin or self.role == 'moderator'
+        return self.is_admin or self.role == MODERATOR
 
     @property
     def is_user(self) -> bool:
-        return self.is_moderator or self.role == 'user'
+        return self.is_moderator or self.role == USER
 
     class Meta:
         verbose_name = 'Пользователь'
