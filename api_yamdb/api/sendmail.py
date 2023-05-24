@@ -5,7 +5,7 @@ from django.db.models import QuerySet
 
 
 def send_mail_code(user: QuerySet) -> int:
-    """Отправка письма на email"""
+    """Отправка письма на email."""
 
     confirmation_code = default_token_generator.make_token(user)
     send_mail(

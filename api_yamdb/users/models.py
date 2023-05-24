@@ -2,6 +2,10 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+MAX_LENGTH_USERNAME = 150
+MAX_LENGTH_EMAIL = 254
+MAX_LENGHT_CONFORMATION_CODE = 50
+
 
 def validate_user(value: str) -> None:
     """Проверка поля username."""
@@ -15,10 +19,6 @@ class CustomUser(AbstractUser):
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
-
-    MAX_LENGTH_USERNAME = 150
-    MAX_LENGTH_EMAIL = 254
-    MAX_LENGHT_CONFORMATION_CODE = 50
 
     ROLES = (
         (ADMIN, 'Admin'),
