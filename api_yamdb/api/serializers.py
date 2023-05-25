@@ -1,13 +1,18 @@
-from typing import OrderedDict, Union
+from typing import OrderedDict
 
-from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
 
 from api.validators import validate_username
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import CustomUser, validate_user
+from users.models import (
+    MAX_LENGTH_EMAIL,
+    MAX_LENGTH_USERNAME,
+    CustomUser,
+    validate_user,
+)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -34,11 +39,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     def validate(self, value: OrderedDict) -> OrderedDict:
+        title = get_object_or_404(
+            Title,
+            pk=self.context.get('view').kwargs.get('title_id'),
+        )
         if (
             self.context.get('request').method == 'POST'
-            and Review.objects.filter(
-                author__exact=self.context.get('request').user,
-                title__exact=self.context.get('view').kwargs.get('title_id'),
+            and title.reviews.filter(
+                author=self.context.get('request').user,
             ).exists()
         ):
             raise serializers.ValidationError(
@@ -54,7 +62,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
@@ -67,10 +75,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'category',
             'genre',
         )
-
-    def get_rating(self, title: Title) -> Union[int, None]:
-        rating = title.reviews.aggregate(Avg('score')).get('score__avg')
-        return None if rating is None else round(rating)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -92,7 +96,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -101,7 +105,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -131,7 +135,7 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -139,7 +143,7 @@ class UsersSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         required=True,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -161,11 +165,11 @@ class UsersSerializer(serializers.ModelSerializer):
 
 class UsernameSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         required=False,
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         required=False,
     )
 
@@ -183,7 +187,7 @@ class UsernameSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         required=False,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),
@@ -191,7 +195,7 @@ class UserMeSerializer(serializers.ModelSerializer):
         ],
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         required=False,
         validators=[
             UniqueValidator(queryset=CustomUser.objects.all()),

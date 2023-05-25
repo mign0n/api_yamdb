@@ -1,6 +1,6 @@
 from typing import Type
 
-from django.db.models import QuerySet
+from django.db.models import Avg, QuerySet
 from django.utils.functional import cached_property
 from django_filters.rest_framework import (
     CharFilter,
@@ -132,7 +132,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         'options',
         'trace',
     ]
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+        'name',
+    )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     permission_classes = (AdminOrReadOnly,)
@@ -156,15 +158,13 @@ class SignUpView(APIView):
             email = getattr(user, 'email')
             if request.data.get('email') != email:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            confirmation_code = send_mail_code(email)
-            user.confirmation_code = confirmation_code
+            user.confirmation_code = send_mail_code(user)
             user.save()
             return Response(status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data.get('email')
-        confirmation_code = send_mail_code(email)
-        serializer.save(confirmation_code=confirmation_code)
+        user = serializer.save()
+        serializer.save(confirmation_code=send_mail_code(user))
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
