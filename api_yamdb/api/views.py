@@ -1,6 +1,6 @@
 from typing import Type
 
-from django.db.models import QuerySet
+from django.db.models import Avg, QuerySet
 from django.utils.functional import cached_property
 from django_filters.rest_framework import (
     CharFilter,
@@ -132,7 +132,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         'options',
         'trace',
     ]
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     permission_classes = (AdminOrReadOnly,)

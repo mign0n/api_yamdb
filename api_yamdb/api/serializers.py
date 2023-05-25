@@ -1,6 +1,5 @@
-from typing import OrderedDict, Union
+from typing import OrderedDict
 
-from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
@@ -61,7 +60,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
@@ -74,10 +73,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'category',
             'genre',
         )
-
-    def get_rating(self, title: Title) -> Union[int, None]:
-        rating = title.reviews.aggregate(Avg('score')).get('score__avg')
-        return None if rating is None else round(rating)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
