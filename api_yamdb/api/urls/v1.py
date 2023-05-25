@@ -33,10 +33,15 @@ urlpatterns = [
         'titles/<int:title_id>/reviews/<int:review_id>/',
         include(comments_router.urls),
     ),
-    path('auth/', include([
-        path('signup/', SignUpView.as_view(), name='register_user'),
-        path('token/', TokenView.as_view(), name='token_create'),
-    ])),
+    path(
+        'auth/',
+        include(
+            [
+                path('signup/', SignUpView.as_view(), name='register_user'),
+                path('token/', TokenView.as_view(), name='token_create'),
+            ],
+        ),
+    ),
     path(
         'users/me/',
         UserMeViewSet.as_view({'get': 'retrieve', 'patch': 'update'}),

@@ -8,8 +8,10 @@ from rest_framework.validators import UniqueValidator
 from api.validators import validate_username
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import (
-    CustomUser, validate_user,
-    MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
+    MAX_LENGTH_EMAIL,
+    MAX_LENGTH_USERNAME,
+    CustomUser,
+    validate_user,
 )
 
 
