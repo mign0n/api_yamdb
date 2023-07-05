@@ -22,7 +22,7 @@ click==8.1.3
     # via black
 columnar==1.4.1
     # via pymarkdownlnt
-django==3.2.19
+django==3.2.20
     # via
     #   api-yamdb (pyproject.toml)
     #   django-filter
