@@ -12,7 +12,7 @@ attrs==23.1.0
     # via
     #   flake8-annotations
     #   jsonschema
-black==23.3.0
+black==24.3.0
     # via api-yamdb (pyproject.toml)
 certifi==2023.5.7
     # via requests
