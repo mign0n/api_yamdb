@@ -148,7 +148,7 @@ typing-extensions==4.5.0
     #   pymarkdownlnt
 uritemplate==4.1.1
     # via drf-spectacular
-urllib3==2.0.2
+urllib3==1.26.19
     # via requests
 wcwidth==0.2.6
     # via columnar
